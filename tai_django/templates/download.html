@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Download</h2>
+
+    <a href='/michal/PycharmProjects/TAI/tai_django/media/logo.jpeg'
+       download> Download logo </a>
+
+  {% for file in files %}
+  <br>
+  <a href='?f={{file}}' /> /download/{{file}} </a>
+  {% endfor %}
+
+  {% if url %}
+
+  {% endif %}
+{% endblock %}
