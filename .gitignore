@@ -1,0 +1,6 @@
+.idea
+venv
+*.jpeg
+*.png
+*.dec
+*.enc
