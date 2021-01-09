@@ -86,9 +86,18 @@ def decrypt_file(in_file, out_file, password):
                 if not to_decrypt:
                     break
 
-def chunk_processing(chunk):
-    print('[*] Chunk processing...')
+def process_chunk(chunk):
+    # print('[*] Chunk processing...')
+    # chunk = str(chunk, 'utf-8')
+    password = 'haslo'.encode()
+    key = hashlib.sha256(password).digest()
+    mode = AES.MODE_CBC
+    IV = 'This is an IV456'
+    cipher = AES.new(key, mode, IV)
+    plain_text = cipher.decrypt(chunk)
+    chunk = plain_text.rstrip(b'0')
     return chunk
+    # return chunk
 
 def download(request):
     path = '/home/michal/PycharmProjects/TAI/tai_django/media/'
@@ -99,13 +108,13 @@ def download(request):
             chunk_size = 8000
             file_path = path + str(f)
             print(file_path)
-            response = StreamingHttpResponse(FileWrapper(open(file_path,
-                                                              'rb'),
-                                                         chunk_size),
-                                             content_type="application/octet-stream")
-            response['Content-Length'] = os.path.getsize(file_path)
-            response[
-                'Content-Disposition'] = "attachment; filename=%s" % f
+            response = StreamingHttpResponse(
+                (process_chunk(chunk)
+                for chunk in FileWrapper(open(file_path,'rb'),chunk_size)),
+                content_type="application/octet-stream")
+            # response['Content-Length'] = os.path.getsize(file_path)
+            # response[
+            #     'Content-Disposition'] = "attachment; filename=%s" % f
             return response
         else:
             print('No parameters')
@@ -143,21 +152,18 @@ def upload(request):
         encrypt_file(request.FILES['document'],
                       '/home/michal/PycharmProjects/TAI/tai_django/media/out'
                       '.enc', 'haslo')
-        print('test')
-        decrypt_file('/home/michal/PycharmProjects/TAI/tai_django/media/out'
-                     '.enc',
-                     '/home/michal/PycharmProjects/TAI/tai_django/media/out'
-                     '.dec', 'haslo')
+        # print('test')
+        # decrypt_file('/home/michal/PycharmProjects/TAI/tai_django/media/out'
+        #              '.enc',
+        #              '/home/michal/PycharmProjects/TAI/tai_django/media/out'
+        #              '.dec', 'haslo')
+        #
+        # print(os.system('md5sum '+'/home/michal/PycharmProjects/TAI/tai_django'
+        #                    '/media/logo.jpeg'))
+        # print(os.system('md5sum '+
+        #           '/home/michal/PycharmProjects/TAI/tai_django/media/out.dec'))
 
-        print(os.system('md5sum '+'/home/michal/PycharmProjects/TAI/tai_django'
-                           '/media/logo.jpeg'))
-        print(os.system('md5sum '+
-                  '/home/michal/PycharmProjects/TAI/tai_django/media/out.dec'))
 
-        # file_size = uploaded_file.size
-        # content_type = uploaded_file.content_type
-        # content_length = uploaded_file.size
-        # charset = uploaded_file.charset
 
 
 
