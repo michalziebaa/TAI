@@ -41,7 +41,7 @@ def encrypt_file(in_file, out_file, password):
     mode = AES.MODE_CBC
     IV = 'This is an IV456'
     cipher = AES.new(key, mode, IV)
-    CHUNK_SIZE = 8000
+    CHUNK_SIZE = 10000
     encrypted_list = []
     size = in_file.size
     test = in_file.multiple_chunks(chunk_size=1)
@@ -70,7 +70,7 @@ def decrypt_file(in_file, out_file, password):
     mode = AES.MODE_CBC
     IV = 'This is an IV456'
     cipher = AES.new(key, mode, IV)
-    CHUNK_SIZE = 8000
+    CHUNK_SIZE = 10000
     # with open(in_file, 'rb') as f:
     #     to_decrypt = pickle.load(f)
     # with open(out_file, 'wb') as f2:
@@ -95,8 +95,8 @@ def process_chunk(chunk):
     IV = 'This is an IV456'
     cipher = AES.new(key, mode, IV)
     plain_text = cipher.decrypt(chunk)
-    chunk = plain_text.rstrip(b'0')
-    return chunk
+    chunk1 = plain_text.rstrip(b'0')
+    return chunk1
     # return chunk
 
 def download(request):
@@ -105,13 +105,13 @@ def download(request):
     if request.method == 'GET':
         f = request.GET.get('f')
         if f:
-            chunk_size = 8000
+            chunk_size = 10000
             file_path = path + str(f)
             print(file_path)
             response = StreamingHttpResponse(
                 (process_chunk(chunk)
-                for chunk in FileWrapper(open(file_path,'rb'),chunk_size)),
-                content_type="application/octet-stream")
+                for chunk in FileWrapper(open(file_path,'rb'),chunk_size))
+                 ,content_type="application/octet-stream")
             # response['Content-Length'] = os.path.getsize(file_path)
             # response[
             #     'Content-Disposition'] = "attachment; filename=%s" % f
@@ -152,16 +152,16 @@ def upload(request):
         encrypt_file(request.FILES['document'],
                       '/home/michal/PycharmProjects/TAI/tai_django/media/out'
                       '.enc', 'haslo')
-        # print('test')
-        # decrypt_file('/home/michal/PycharmProjects/TAI/tai_django/media/out'
-        #              '.enc',
-        #              '/home/michal/PycharmProjects/TAI/tai_django/media/out'
-        #              '.dec', 'haslo')
-        #
-        # print(os.system('md5sum '+'/home/michal/PycharmProjects/TAI/tai_django'
-        #                    '/media/logo.jpeg'))
-        # print(os.system('md5sum '+
-        #           '/home/michal/PycharmProjects/TAI/tai_django/media/out.dec'))
+        print('test')
+        decrypt_file('/home/michal/PycharmProjects/TAI/tai_django/media/out'
+                     '.enc',
+                     '/home/michal/PycharmProjects/TAI/tai_django/media/out'
+                     '.dec', 'haslo')
+
+        print(os.system('md5sum '+'/home/michal/PycharmProjects/TAI/tai_django'
+                           '/media/logo.jpeg'))
+        print(os.system('md5sum '+
+                  '/home/michal/PycharmProjects/TAI/tai_django/media/out.dec'))
 
 
 
