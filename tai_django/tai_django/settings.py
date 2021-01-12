@@ -55,7 +55,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            #'/home/michal/PycharmProjects/TAI/tai_django/tai_django/templates',
+            #'/home/dev/PycharmProjects/TAI/tai_django/tai_django/templates',
             str(BASE_DIR) + '/templates'
         ],
         'APP_DIRS': True,

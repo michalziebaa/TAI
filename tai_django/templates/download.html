@@ -3,13 +3,43 @@
 {% block content %}
   <h2>Download</h2>
 
-    <a href='/michal/PycharmProjects/TAI/tai_django/media/logo.jpeg'
-       download> Download logo </a>
+<!--    <a href='/dev/PycharmProjects/TAI/tai_django/media/logo.jpeg'-->
+<!--       download> Download logo </a>-->
 
-  {% for file in files %}
+<!--  {% for file in files %}-->
+<!--  <br>-->
+<!--  <a href='?f={{file}}' /> /download/{{file}} </a>-->
+<!--  {% endfor %}-->
+
+  <form id="enc" method="POST">
+    {% csrf_token %}
+    {% for file in encfiles %}
+    <br>
+    <input type="checkbox" name="file_name" value="{{file}}">
+    <label for="file_name">{{file}}</label>
+    {% endfor %}
+    <br>
+    <input type="text" hidden name="type" value="enc">
+    <label for="pass">Password: </label>
+    <input type="text" id="pass" name="password">
+    <button type="submit">Download file</button>
+  </form>
+
   <br>
-  <a href='?f={{file}}' /> /download/{{file}} </a>
-  {% endfor %}
+  <br>
+  <form id="notenc" method="POST">
+    {% csrf_token %}
+    {% for file in unencfiles %}
+    <br>
+    <input type="checkbox" name="file_name" value="{{file}}">
+    <label for="file_name">{{file}}</label>
+    {% endfor %}
+    <br>
+    <input type="text" hidden name="type" value="notenc">
+    <label for="pass">Password: </label>
+    <button type="submit">Download file</button>
+  </form>
+
 
   {% if url %}
 

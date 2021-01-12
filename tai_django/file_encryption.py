@@ -52,10 +52,10 @@ def decrypt_file(in_file, out_file, password):
     #         decrypted_part = cipher.decrypt(c)
     #         f2.write(decrypted_part.rstrip(b'0'))
 
-file2 = '/home/michal/garbage/test_2/sample.txt'
-file2_encrypted = '/home/michal/garbage/logo.jpeg.enc'
-file2_decrypted = '/home/michal/garbage/test_2/sample_dex.txt'
-file2_enc = '/home/michal/garbage/test_2/out.enc'
+file2 = '/home/dev/garbage/test_2/sample.txt'
+file2_encrypted = '/home/dev/garbage/logo.jpeg.enc'
+file2_decrypted = '/home/dev/garbage/test_2/sample_dex.txt'
+file2_enc = '/home/dev/garbage/test_2/out.enc'
 
 #encrypt_file(file2, file2_encrypted, 'haslo')
 decrypt_file(file2_enc, file2_decrypted, 'haslo')

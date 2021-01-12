@@ -1,11 +1,40 @@
 {% extends 'base.html' %}
 
+
+
+
 {% block content %}
   <h2>Upload</h2>
+
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
+
+<script>
+function isCheckbox() {
+  // Get the checkbox
+  var checkBox = document.getElementById("doEncrypt");
+  // Get the output text
+  var text = document.getElementById("doEncryption");
+
+  // If the checkbox is checked, display the output text
+  if (checkBox.checked == true){
+    doEncryption.style.display = "block";
+  } else {
+    doEncryption.style.display = "none";
+  }
+}
+</script>
+
     <input type="file" name="document">
     <button type="submit">Upload file</button>
+
+    <br>
+    Encryption: <input type="checkbox" id="doEncrypt" onclick="isCheckbox()">
+    <div id='doEncryption', style="display:none">
+      <label for="pass">Password: </label>
+      <input type="text" id="pass" name="password">
+    </div>
+
   </form>
   {% if url %}
     <p>Uploaded file: <a href="{{ url }}">{{ url }}</a></p>
