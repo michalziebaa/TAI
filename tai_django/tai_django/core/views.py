@@ -24,6 +24,12 @@ import time
 import pickle
 import mimetypes
 
+#global variables
+CHUNK_SIZE = 16000
+encrypted_upload_path = \
+    '/home/dev/PycharmProjects/TAI/tai_django/media/encrypted/'
+unencrypted_upload_path = \
+    '/home/dev/PycharmProjects/TAI/tai_django/media/unencrypted/'
 
 class Home(TemplateView):
     template_name = 'home.html'
@@ -58,7 +64,7 @@ def pad_message(file):
     return file
 
 def upload_without_encryption(in_file, out_file):
-    CHUNK_SIZE = 10000
+
     encrypted_list = []
     size = in_file.size
     test = in_file.multiple_chunks(chunk_size=1)
@@ -74,7 +80,7 @@ def encrypt_file(in_file, out_file, password):
     mode = AES.MODE_CBC
     IV = 'This is an IV456'
     cipher = AES.new(key, mode, IV)
-    CHUNK_SIZE = 10000
+
     encrypted_list = []
     size = in_file.size
     test = in_file.multiple_chunks(chunk_size=1)
@@ -94,7 +100,7 @@ def decrypt_file(in_file, out_file, password):
     mode = AES.MODE_CBC
     IV = 'This is an IV456'
     cipher = AES.new(key, mode, IV)
-    CHUNK_SIZE = 10000
+
     with open(out_file, 'wb') as f2:
         with open(in_file,'rb') as f:
             while True:
@@ -105,8 +111,6 @@ def decrypt_file(in_file, out_file, password):
                     break
 
 def process_chunk(chunk, passwd):
-    # print('[*] Chunk processing...')
-    # chunk = str(chunk, 'utf-8')
     password = passwd.encode()
     key = hashlib.sha256(password).digest()
     mode = AES.MODE_CBC
@@ -121,13 +125,6 @@ def process_chunk_not_enc(chunk):
     # return chunk
 
 def download(request):
-    encrypted_upload_path = \
-        '/home/dev/PycharmProjects/TAI/tai_django/media/encrypted/'
-    unencrypted_upload_path = \
-        '/home/dev/PycharmProjects/TAI/tai_django/media/unencrypted/'
-    path = \
-        '/home/dev/PycharmProjects/TAI/tai_django/media/'
-
     if request.method == 'POST':
         if request.POST.get('type') == 'enc':
             time_start = time.perf_counter()
@@ -135,11 +132,11 @@ def download(request):
             print('proceed encryption')
             file_name = request.POST.get('file_name')
             password = request.POST.get('password')
-            chunk_size = 10000
+
             file_path = encrypted_upload_path + file_name
             response = StreamingHttpResponse(
                 (process_chunk(chunk, password)
-                 for chunk in FileWrapper(open(file_path, 'rb'), chunk_size))
+                 for chunk in FileWrapper(open(file_path, 'rb'), CHUNK_SIZE))
                 , content_type="application/octet-stream")
 
             file_size = os.stat(file_path).st_size
@@ -155,11 +152,11 @@ def download(request):
             time_start = time.perf_counter()
             print('proceed not encrypted')
             file_name = request.POST.get('file_name')
-            chunk_size = 10000
+
             file_path = unencrypted_upload_path + file_name
             response = StreamingHttpResponse(
                 (process_chunk_not_enc(chunk)
-                 for chunk in FileWrapper(open(file_path, 'rb'), chunk_size))
+                 for chunk in FileWrapper(open(file_path, 'rb'), CHUNK_SIZE))
                 , content_type="application/octet-stream")
 
             file_size = os.stat(file_path).st_size
@@ -177,37 +174,10 @@ def download(request):
 
     return render(request,'download.html', {'encfiles': enc_file_list,
                                             'unencfiles': unenc_file_list})
-    # return render(request, 'download.html')
 
-
-# def download_decrypt(request, in_file, out_file, password):
-#     file_path = '/home/michal/PycharmProjects/TAI/tai_django/media/out.enc'
-#     chunk_size = 8000
-#     filename = os.path.basename(file_path)
-#     response = StreamingHttpResponse(
-#         ( chunk_processing(chunk)
-#           for chunk in FileWrapper(open(file_path,'rb'),chunk_size),
-#         content_type="application/octet-stream")
-#     response['Content-Length'] = os.path.getsize(file_path)
-#     response['Content-Disposition'] = "attachment; filename=%s" % filename
-#     return response
-
-
-
-def handle_uploaded_file(f):
-    with open('/home/dev/PycharmProjects/TAI/tai_django/media/33_mb.bin',
-              'wb+') as \
-            destination:
-        for chunk in f.chunks():
-            print('chunks')
-            destination.write(chunk)
 
 def upload(request):
     if request.method == 'POST':
-        encrypted_upload_path = \
-            '/home/dev/PycharmProjects/TAI/tai_django/media/encrypted/'
-        unencrypted_upload_path = \
-            '/home/dev/PycharmProjects/TAI/tai_django/media/unencrypted/'
         file_size = request.FILES['document'].size
         if request.POST["password"]:
             #encrypting file
@@ -239,45 +209,4 @@ def upload(request):
             print("NOT encrypted upload time: {}".format(upload_time))
         print('File size {}'.format(file_size))
 
-
-        # print('test')
-        # decrypt_file('/home/dev/PycharmProjects/TAI/tai_django/media/out'
-        #              '.enc',
-        #              '/home/dev/PycharmProjects/TAI/tai_django/media/out'
-        #              '.dec', 'haslo')
-        #
-        # print(os.system('md5sum '+'/home/dev/PycharmProjects/TAI/tai_django'
-        #                    '/media/logo.jpeg'))
-        # print(os.system('md5sum '+
-        #           '/home/dev/PycharmProjects/TAI/tai_django/media/out.dec'))
-
-
-
-
-
-
-        # print(file_size)
-        # fh = FileUploadHandler()
-        # fh.new_file(uploaded_file, uploaded_file.name, content_type=content_type,
-        #             content_length=content_length, charset=charset)
-        # test1 = fh.receive_data_chunk(uploaded_file, 2000)
-        # print('test')
-
-
-        #fs = FileSystemStorage()
-        #fs.save(uploaded_file.name, uploaded_file)
-        #print(uploaded_file.name)
-        #print(uploaded_file.size)
     return render(request, 'upload.html')
-
-
-
-# def download(request):
-#    the_file = '/some/file/name.png'
-#    filename = os.path.basename(the_file)
-#    chunk_size = 8192
-#    response = StreamingHttpResponse(FileWrapper(open(the_file, 'rb'), chunk_size),
-#                            content_type=mimetypes.guess_type(the_file)[0])
-#    response['Content-Length'] = os.path.getsize(the_file)
-#    response['Content-Disposition'] = "attachment; filename=%s" % filename
-#    return response
