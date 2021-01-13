@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{% if user.is_authenticated %}
   <h2>Download</h2>
 
 <!--    <a href='/dev/PycharmProjects/TAI/tai_django/media/logo.jpeg'-->
@@ -41,7 +42,9 @@
   </form>
 
 
-  {% if url %}
+{% else  %}
+<p>Please log in</p>
+<a href="/login">Login</a>
+{% endif %}
 
-  {% endif %}
 {% endblock %}

@@ -24,6 +24,124 @@ import time
 import pickle
 import mimetypes
 
+#authentication
+from django.utils.encoding import force_bytes, force_text, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
+from ..utils import token_generator
+
+from django.shortcuts import render, redirect
+from ..forms import LoginForm, registerForm
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from ..settings import EMAIL_HOST_USER
+
+def log_in(request):
+    if request.user.is_authenticated:
+        return redirect('/upload', {"user":request.user})
+    if request.method == 'POST':
+        time_start = time.perf_counter()
+
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            user = authenticate(
+                request,
+                username=form.cleaned_data.get('username'),
+                password=form.cleaned_data.get('password')
+            )
+
+            if user is not None:
+                if not user.is_active:
+                    return redirect('/upload', {"user":request.user})
+                login(request, user)
+                time_stop = time.perf_counter()
+                login_time = time_stop - time_start
+                print('Time of login: {}'.format(login_time))
+                return redirect('/upload', {"user":request.user})
+                #return render('index.html')
+            else:
+                context = {'form': form}
+                return render(request, 'login.html', context)
+        else:
+            context = {'form': form}
+            return render(request, 'login.html', context)
+    else:
+        context = {'form': LoginForm()}
+        return render(request, 'login.html', context)
+
+
+def register(request):
+    if request.method == 'POST':
+        register_form = registerForm(request.POST)
+        if register_form.is_valid():
+            user = User.objects.create_user(username=register_form.cleaned_data.get('username'),
+                                            email=register_form.cleaned_data.get('email'))
+            user.set_password(register_form.cleaned_data.get('password'))
+            user.is_active = False
+            user.save()
+
+            # sending an activation email
+
+            uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+            domain = get_current_site(request).domain
+            link = reverse('activate',
+                           kwargs={'uidb64': uidb64, 'token': token_generator.make_token(user)})
+            activate_url = 'http://' + domain + link
+            email_body = "Thank you for creating an account on our web side. " \
+                         "Please click that link to activate your account " + activate_url
+            send_mail(
+                'Account activation',
+                email_body,
+                EMAIL_HOST_USER,
+                [register_form.cleaned_data.get('email')],
+            )
+            return redirect('index')
+        else:
+            context = {'form': register_form}
+            return render(request, 'register.html', context)
+    else:
+        context = {'form': registerForm()}
+        return render(request, 'register.html', context)
+
+
+def activate(request, uidb64, token):
+    # return render(request, 'authentication/login.html')
+    try:
+        id = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=id)
+
+        #if not account_activation_token.check_token(user, token):
+           # redirect('login'+'?message=' + 'User already activated')
+        if user.is_active:
+            # return redirect('login')
+            return render(request, 'login.html')
+        user.is_active = True
+        user.save()
+        return render(request, 'login.html')
+        pass
+    except Exception as ex:
+        pass
+
+    return render(request, 'login.html')
+
+
+def log_out(request):
+    if request.method == 'GET':
+        logout(request)
+    return redirect('/login')
+
+
+
+
+
+
+
+
+
+
+
 #global variables
 CHUNK_SIZE = 16000
 encrypted_upload_path = \

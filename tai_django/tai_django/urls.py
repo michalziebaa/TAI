@@ -20,8 +20,17 @@ from tai_django.core import views
 from tai_django import settings
 from django.conf.urls.static import static
 
+from django.contrib.auth import views as auth_views
+from django.urls import path, include
+# from views import log_in, log_out, register, activate
+from tai_django.core.views import log_in, log_out, register, activate
+
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', views.upload, name='upload'),
+    path('login/', log_in),
+    path('logout/', log_out),
+    path('register/', register),
+    path('activate/<uidb64>/<token>', activate, name="activate"),
     path('upload/', views.upload, name='upload'),
     path('admin/', admin.site.urls),
     path('download/', views.download, name='download'),
